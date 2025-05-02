@@ -3,107 +3,166 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Catatan Tabungan Dion dan Nana</title>
+  <title>Tabungan Dion & Nana</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #ffe6f0;
-      color: #333;
+      background-color: #ffe4ec;
+      margin: 0;
       padding: 20px;
     }
-
     h1 {
-      text-align: center;
       color: #d63384;
+      text-align: center;
     }
-
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: #fff0f5;
+    form {
+      background: #fff0f6;
       padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      margin-bottom: 30px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
     }
-
     input, select, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1em;
-    }
-
-    button {
-      background-color: #ff66b2;
-      color: white;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background-color: #e60073;
-    }
-
-    ul {
-      margin-top: 20px;
-      padding: 0;
-      list-style: none;
-    }
-
-    li {
-      background-color: #ffe6f0;
       padding: 10px;
       margin: 5px 0;
-      border-left: 5px solid #d63384;
-      border-radius: 8px;
+      width: 100%;
+      border: 1px solid #d63384;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #d63384;
+      color: white;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff0f6;
+    }
+    th, td {
+      border: 1px solid #d63384;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #f8d7e8;
+    }
+    .actions button {
+      width: auto;
+      margin: 2px;
     }
   </style>
 </head>
 <body>
-  <h1>Catatan Tabungan Dion dan Nana</h1>
-  <div class="container">
-    <label for="nama">Pilih Nama:</label>
-    <select id="nama">
+  <h1>Catatan Tabungan Dion & Nana</h1>
+
+  <form id="tabunganForm">
+    <label for="tanggal">Tanggal:</label>
+    <input type="date" id="tanggal" required />
+
+    <label for="nama">Nama:</label>
+    <select id="nama" required>
       <option value="Dion">Dion</option>
       <option value="Nana">Nana</option>
     </select>
 
-    <label for="jumlah">Jumlah Tabungan (Rp):</label>
-    <input type="number" id="jumlah" placeholder="Masukkan jumlah..." />
+    <label for="jumlah">Jumlah Uang (Rp):</label>
+    <input type="number" id="jumlah" min="0" required />
 
-    <button onclick="tambahTabungan()">Simpan Catatan</button>
+    <button type="submit">Simpan Tabungan</button>
+  </form>
 
-    <ul id="daftarTabungan"></ul>
-  </div>
+  <table id="tabelHasil">
+    <thead>
+      <tr>
+        <th>Tanggal</th>
+        <th>Nama</th>
+        <th>Jumlah (Rp)</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+      <tr>
+        <th colspan="2">Total Dion</th>
+        <th id="totalDion">Rp 0</th>
+        <th></th>
+      </tr>
+      <tr>
+        <th colspan="2">Total Nana</th>
+        <th id="totalNana">Rp 0</th>
+        <th></th>
+      </tr>
+      <tr>
+        <th colspan="2">Total Semua</th>
+        <th id="totalSemua">Rp 0</th>
+        <th></th>
+      </tr>
+    </tfoot>
+  </table>
 
   <script>
-    const daftarTabungan = [];
+    const form = document.getElementById('tabunganForm');
+    const tbody = document.querySelector('#tabelHasil tbody');
+    const totalDionEl = document.getElementById('totalDion');
+    const totalNanaEl = document.getElementById('totalNana');
+    const totalSemuaEl = document.getElementById('totalSemua');
 
-    function tambahTabungan() {
-      const nama = document.getElementById("nama").value;
-      const jumlah = parseInt(document.getElementById("jumlah").value);
+    let tabunganList = [];
 
-      if (!jumlah || jumlah <= 0) {
-        alert("Masukkan jumlah yang valid.");
-        return;
-      }
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const tanggal = document.getElementById('tanggal').value;
+      const nama = document.getElementById('nama').value;
+      const jumlah = parseInt(document.getElementById('jumlah').value);
 
-      const catatan = `${nama} menabung sebesar Rp ${jumlah.toLocaleString()}`;
-      daftarTabungan.push(catatan);
-      tampilkanCatatan();
-      document.getElementById("jumlah").value = "";
+      tabunganList.push({ tanggal, nama, jumlah });
+      renderTable();
+      form.reset();
+    });
+
+    function renderTable() {
+      tbody.innerHTML = '';
+      let totalDion = 0;
+      let totalNana = 0;
+
+      tabunganList.forEach((item, index) => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td>${item.tanggal}</td>
+          <td>${item.nama}</td>
+          <td>Rp ${item.jumlah.toLocaleString()}</td>
+          <td class="actions">
+            <button onclick="editData(${index})">Edit</button>
+            <button onclick="hapusData(${index})">Hapus</button>
+          </td>
+        `;
+
+        if (item.nama === 'Dion') totalDion += item.jumlah;
+        if (item.nama === 'Nana') totalNana += item.jumlah;
+      });
+
+      totalDionEl.textContent = `Rp ${totalDion.toLocaleString()}`;
+      totalNanaEl.textContent = `Rp ${totalNana.toLocaleString()}`;
+      totalSemuaEl.textContent = `Rp ${(totalDion + totalNana).toLocaleString()}`;
     }
 
-    function tampilkanCatatan() {
-      const list = document.getElementById("daftarTabungan");
-      list.innerHTML = "";
-      daftarTabungan.forEach(item => {
-        const li = document.createElement("li");
-        li.textContent = item;
-        list.appendChild(li);
-      });
+    window.hapusData = function(index) {
+      if (confirm('Yakin ingin menghapus data ini?')) {
+        tabunganList.splice(index, 1);
+        renderTable();
+      }
+    }
+
+    window.editData = function(index) {
+      const data = tabunganList[index];
+      document.getElementById('tanggal').value = data.tanggal;
+      document.getElementById('nama').value = data.nama;
+      document.getElementById('jumlah').value = data.jumlah;
+      tabunganList.splice(index, 1); // hapus lalu nanti submit ulang akan dianggap edit
+      renderTable();
     }
   </script>
 </body>
