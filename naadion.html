@@ -3,80 +3,167 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Catatan Tabungan Dion & Nana</title>
+  <title>Tabungan Dion & Nana</title>
   <style>
     body {
-      background-color: #ffe6f0;
       font-family: 'Segoe UI', sans-serif;
-      color: #333;
-      padding: 2rem;
+      background-color: #ffe4ec;
+      margin: 0;
+      padding: 20px;
     }
-
     h1 {
-      color: #cc3366;
+      color: #d63384;
       text-align: center;
     }
-
+    form {
+      background: #fff0f6;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    input, select, button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+      border: 1px solid #d63384;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #d63384;
+      color: white;
+      cursor: pointer;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
-      background: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-top: 2rem;
+      background-color: #fff0f6;
     }
-
     th, td {
-      padding: 12px;
+      border: 1px solid #d63384;
+      padding: 10px;
       text-align: center;
-      border-bottom: 1px solid #f1b6c6;
     }
-
     th {
-      background-color: #fbb6ce;
-      color: #fff;
+      background-color: #f8d7e8;
     }
-
-    .footer {
-      margin-top: 2rem;
-      text-align: center;
-      font-size: 0.9rem;
-      color: #666;
+    .actions button {
+      width: auto;
+      margin: 2px;
     }
   </style>
 </head>
 <body>
-
   <h1>Catatan Tabungan Dion & Nana</h1>
 
-  <table>
+  <form id="tabunganForm">
+    <label for="tanggal">Tanggal:</label>
+    <input type="date" id="tanggal" required />
+
+    <label for="nama">Nama:</label>
+    <select id="nama" required>
+      <option value="Dion">Dion</option>
+      <option value="Nana">Nana</option>
+    </select>
+
+    <label for="jumlah">Jumlah Uang (Rp):</label>
+    <input type="number" id="jumlah" min="0" required />
+
+    <button type="submit">Simpan Tabungan</button>
+  </form>
+
+  <table id="tabelHasil">
     <thead>
       <tr>
         <th>Tanggal</th>
         <th>Nama</th>
         <th>Jumlah (Rp)</th>
-        <th>Keterangan</th>
+        <th>Aksi</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody></tbody>
+    <tfoot>
       <tr>
-        <td>2025-05-01</td>
-        <td>Dion</td>
-        <td>100.000</td>
-        <td>Tabungan awal</td>
+        <th colspan="2">Total Dion</th>
+        <th id="totalDion">Rp 0</th>
+        <th></th>
       </tr>
       <tr>
-        <td>2025-05-02</td>
-        <td>Nana</td>
-        <td>150.000</td>
-        <td>Tabungan tambahan</td>
+        <th colspan="2">Total Nana</th>
+        <th id="totalNana">Rp 0</th>
+        <th></th>
       </tr>
-      <!-- Tambahkan baris lain sesuai kebutuhan -->
-    </tbody>
+      <tr>
+        <th colspan="2">Total Semua</th>
+        <th id="totalSemua">Rp 0</th>
+        <th></th>
+      </tr>
+    </tfoot>
   </table>
 
-  <div class="footer">
-    Dibuat untuk mencatat perjalanan tabungan pernikahan 💕
-  </div>
+  <script>
+    const form = document.getElementById('tabunganForm');
+    const tbody = document.querySelector('#tabelHasil tbody');
+    const totalDionEl = document.getElementById('totalDion');
+    const totalNanaEl = document.getElementById('totalNana');
+    const totalSemuaEl = document.getElementById('totalSemua');
 
+    let tabunganList = [];
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const tanggal = document.getElementById('tanggal').value;
+      const nama = document.getElementById('nama').value;
+      const jumlah = parseInt(document.getElementById('jumlah').value);
+
+      tabunganList.push({ tanggal, nama, jumlah });
+      renderTable();
+      form.reset();
+    });
+
+    function renderTable() {
+      tbody.innerHTML = '';
+      let totalDion = 0;
+      let totalNana = 0;
+
+      tabunganList.forEach((item, index) => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td>${item.tanggal}</td>
+          <td>${item.nama}</td>
+          <td>Rp ${item.jumlah.toLocaleString()}</td>
+          <td class="actions">
+            <button onclick="editData(${index})">Edit</button>
+            <button onclick="hapusData(${index})">Hapus</button>
+          </td>
+        `;
+
+        if (item.nama === 'Dion') totalDion += item.jumlah;
+        if (item.nama === 'Nana') totalNana += item.jumlah;
+      });
+
+      totalDionEl.textContent = `Rp ${totalDion.toLocaleString()}`;
+      totalNanaEl.textContent = `Rp ${totalNana.toLocaleString()}`;
+      totalSemuaEl.textContent = `Rp ${(totalDion + totalNana).toLocaleString()}`;
+    }
+
+    window.hapusData = function(index) {
+      if (confirm('Yakin ingin menghapus data ini?')) {
+        tabunganList.splice(index, 1);
+        renderTable();
+      }
+    }
+
+    window.editData = function(index) {
+      const data = tabunganList[index];
+      document.getElementById('tanggal').value = data.tanggal;
+      document.getElementById('nama').value = data.nama;
+      document.getElementById('jumlah').value = data.jumlah;
+      tabunganList.splice(index, 1); // hapus lalu nanti submit ulang akan dianggap edit
+      renderTable();
+    }
+  </script>
 </body>
 </html>
