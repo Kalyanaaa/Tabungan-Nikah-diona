@@ -1,78 +1,73 @@
-<script>
-  const form = document.getElementById('tabunganForm');
-  const tbody = document.querySelector('#tabelHasil tbody');
-  const totalDionEl = document.getElementById('totalDion');
-  const totalNanaEl = document.getElementById('totalNana');
-  const totalSemuaEl = document.getElementById('totalSemua');
-
-  let tabunganList = [];
-
-  // Load dari local storage saat pertama kali dibuka
-  window.onload = () => {
-    const dataTersimpan = localStorage.getItem('tabunganList');
-    if (dataTersimpan) {
-      tabunganList = JSON.parse(dataTersimpan);
-      renderTable();
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tabungan Dion & Nana</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #ffe6f0;
+      padding: 20px;
     }
-  };
-
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    const tanggal = document.getElementById('tanggal').value;
-    const nama = document.getElementById('nama').value;
-    const jumlah = parseInt(document.getElementById('jumlah').value);
-
-    tabunganList.push({ tanggal, nama, jumlah });
-    simpanKeLocalStorage();
-    renderTable();
-    form.reset();
-  });
-
-  function renderTable() {
-    tbody.innerHTML = '';
-    let totalDion = 0;
-    let totalNana = 0;
-
-    tabunganList.forEach((item, index) => {
-      const row = tbody.insertRow();
-      row.innerHTML = `
-        <td>${item.tanggal}</td>
-        <td>${item.nama}</td>
-        <td>Rp ${item.jumlah.toLocaleString()}</td>
-        <td class="actions">
-          <button onclick="editData(${index})">Edit</button>
-          <button onclick="hapusData(${index})">Hapus</button>
-        </td>
-      `;
-
-      if (item.nama === 'Dion') totalDion += item.jumlah;
-      if (item.nama === 'Nana') totalNana += item.jumlah;
-    });
-
-    totalDionEl.textContent = `Rp ${totalDion.toLocaleString()}`;
-    totalNanaEl.textContent = `Rp ${totalNana.toLocaleString()}`;
-    totalSemuaEl.textContent = `Rp ${(totalDion + totalNana).toLocaleString()}`;
-  }
-
-  function simpanKeLocalStorage() {
-    localStorage.setItem('tabunganList', JSON.stringify(tabunganList));
-  }
-
-  window.hapusData = function(index) {
-    if (confirm('Yakin ingin menghapus data ini?')) {
-      tabunganList.splice(index, 1);
-      simpanKeLocalStorage();
-      renderTable();
+    h2 {
+      color: #cc2f7a;
     }
-  };
+    form {
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      padding: 5px;
+      margin: 5px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    th {
+      background-color: pink;
+    }
+    .actions button {
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Catatan Tabungan Dion & Nana</h2>
+  <form id="tabunganForm">
+    <input type="date" id="tanggal" required>
+    <select id="nama" required>
+      <option value="Dion">Dion</option>
+      <option value="Nana">Nana</option>
+    </select>
+    <input type="number" id="jumlah" placeholder="Jumlah" required>
+    <select id="bentuk" required>
+      <option value="uang">Uang (Rp)</option>
+      <option value="emas">Emas (gram)</option>
+    </select>
+    <input type="number" id="hargaEmas" placeholder="Harga Emas/gr" style="display:none;">
+    <button type="submit">Simpan</button>
+  </form>
 
-  window.editData = function(index) {
-    const data = tabunganList[index];
-    document.getElementById('tanggal').value = data.tanggal;
-    document.getElementById('nama').value = data.nama;
-    document.getElementById('jumlah').value = data.jumlah;
-    tabunganList.splice(index, 1); // hapus data lalu tambahkan saat disubmit ulang
-    simpanKeLocalStorage();
-    renderTable();
-  };
-</script>
+  <table id="tabelHasil">
+    <thead>
+      <tr>
+        <th>Tanggal</th>
+        <th>Nama</th>
+        <th>Bentuk</th>
+        <th>Jumlah</th>
+        <th>Harga Emas</th>
+        <th>Dalam Rupiah</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h3>Total Tabungan:</h3>
+  <p>Dion: <span id="to
