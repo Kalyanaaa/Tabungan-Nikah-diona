@@ -6,110 +6,164 @@
   <title>Tabungan Dion & Nana</title>
   <style>
     body {
-      background-color: #ffe6f0;
       font-family: 'Segoe UI', sans-serif;
-      color: #333;
-      padding: 2rem;
+      background-color: #ffe4ec;
+      margin: 0;
+      padding: 20px;
     }
-
     h1 {
-      color: #cc3366;
+      color: #d63384;
       text-align: center;
     }
-
-    .input-section {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      max-width: 400px;
-      margin: 0 auto;
-      background: #fff0f5;
-      padding: 1.5rem;
+    form {
+      background: #fff0f6;
+      padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
     }
-
-    input[type="number"] {
-      padding: 0.5rem;
-      font-size: 1rem;
-      border: 1px solid #fcb6d0;
+    input, select, button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+      border: 1px solid #d63384;
       border-radius: 5px;
     }
-
     button {
-      background-color: #f88fb5;
+      background-color: #d63384;
       color: white;
-      padding: 0.6rem;
-      border: none;
-      border-radius: 5px;
       cursor: pointer;
-      font-weight: bold;
     }
-
-    button:hover {
-      background-color: #e0669e;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff0f6;
     }
-
-    .result {
-      margin-top: 2rem;
+    th, td {
+      border: 1px solid #d63384;
+      padding: 10px;
       text-align: center;
     }
-
-    .result h3 {
-      color: #d14a7e;
+    th {
+      background-color: #f8d7e8;
     }
-
-    .footer {
-      margin-top: 3rem;
-      text-align: center;
-      font-size: 0.9rem;
-      color: #666;
+    .actions button {
+      width: auto;
+      margin: 2px;
     }
   </style>
 </head>
 <body>
-
   <h1>Catatan Tabungan Dion & Nana</h1>
 
-  <div class="input-section">
-    <label for="nana">Masukkan Tabungan Nana (Rp):</label>
-    <input type="number" id="nana" placeholder="Contoh: 100000" />
+  <form id="tabunganForm">
+    <label for="tanggal">Tanggal:</label>
+    <input type="date" id="tanggal" required />
 
-    <label for="dion">Masukkan Tabungan Dion (Rp):</label>
-    <input type="number" id="dion" placeholder="Contoh: 150000" />
+    <label for="nama">Nama:</label>
+    <select id="nama" required>
+      <option value="Dion">Dion</option>
+      <option value="Nana">Nana</option>
+    </select>
 
-    <button onclick="hitungTabungan()">Hitung Total</button>
-  </div>
+    <label for="jumlah">Jumlah Uang (Rp):</label>
+    <input type="number" id="jumlah" min="0" required />
 
-  <div class="result" id="hasil">
-    <!-- Hasil akan muncul di sini -->
-  </div>
+    <button type="submit">Simpan Tabungan</button>
+  </form>
 
-  <div class="footer">
-    Dibuat untuk mencatat perjalanan tabungan pernikahan 💕
-  </div>
+  <table id="tabelHasil">
+    <thead>
+      <tr>
+        <th>Tanggal</th>
+        <th>Nama</th>
+        <th>Jumlah (Rp)</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+      <tr>
+        <th colspan="2">Total Dion</th>
+        <th id="totalDion">Rp 0</th>
+        <th></th>
+      </tr>
+      <tr>
+        <th colspan="2">Total Nana</th>
+        <th id="totalNana">Rp 0</th>
+        <th></th>
+      </tr>
+      <tr>
+        <th colspan="2">Total Semua</th>
+        <th id="totalSemua">Rp 0</th>
+        <th></th>
+      </tr>
+    </tfoot>
+  </table>
 
   <script>
-    function formatRupiah(angka) {
-      return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR'
-      }).format(angka);
+    const form = document.getElementById('tabunganForm');
+    const tbody = document.querySelector('#tabelHasil tbody');
+    const totalDionEl = document.getElementById('totalDion');
+    const totalNanaEl = document.getElementById('totalNana');
+    const totalSemuaEl = document.getElementById('totalSemua');
+
+    let tabunganList = [];
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const tanggal = document.getElementById('tanggal').value;
+      const nama = document.getElementById('nama').value;
+      const jumlah = parseInt(document.getElementById('jumlah').value);
+
+      tabunganList.push({ tanggal, nama, jumlah });
+      renderTable();
+      form.reset();
+    });
+
+    function renderTable() {
+      tbody.innerHTML = '';
+      let totalDion = 0;
+      let totalNana = 0;
+
+      tabunganList.forEach((item, index) => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td>${item.tanggal}</td>
+          <td>${item.nama}</td>
+          <td>Rp ${item.jumlah.toLocaleString()}</td>
+          <td class="actions">
+            <button onclick="editData(${index})">Edit</button>
+            <button onclick="hapusData(${index})">Hapus</button>
+          </td>
+        `;
+
+        if (item.nama === 'Dion') totalDion += item.jumlah;
+        if (item.nama === 'Nana') totalNana += item.jumlah;
+      });
+
+      totalDionEl.textContent = `Rp ${totalDion.toLocaleString()}`;
+      totalNanaEl.textContent = `Rp ${totalNana.toLocaleString()}`;
+      totalSemuaEl.textContent = `Rp ${(totalDion + totalNana).toLocaleString()}`;
     }
 
-    function hitungTabungan() {
-      const nana = parseInt(document.getElementById('nana').value) || 0;
-      const dion = parseInt(document.getElementById('dion').value) || 0;
-      const total = nana + dion;
+    window.hapusData = function(index) {
+      if (confirm('Yakin ingin menghapus data ini?')) {
+        tabunganList.splice(index, 1);
+        renderTable();
+      }
+    }
 
-      document.getElementById('hasil').innerHTML = `
-        <h3>Hasil Tabungan:</h3>
-        <p>Tabungan Nana: <strong>${formatRupiah(nana)}</strong></p>
-        <p>Tabungan Dion: <strong>${formatRupiah(dion)}</strong></p>
-        <p>Total Tabungan: <strong>${formatRupiah(total)}</strong></p>
-      `;
+    window.editData = function(index) {
+      const data = tabunganList[index];
+      document.getElementById('tanggal').value = data.tanggal;
+      document.getElementById('nama').value = data.nama;
+      document.getElementById('jumlah').value = data.jumlah;
+      tabunganList.splice(index, 1); // hapus lalu nanti submit ulang akan dianggap edit
+      renderTable();
     }
   </script>
-
 </body>
 </html>
